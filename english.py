@@ -19,16 +19,361 @@ st.set_page_config(page_title="영어 지문 분석기 (Aikar AI 완벽판)", la
 
 CUSTOM_CSS = """
 <style>
-.circle-word { border: 1.5px solid #4e73df; border-radius: 12px; padding: 3px 9px; margin: 3px 2px; display: inline-block; background-color: #ffffff; font-size: 16px; color: #2e59d9; font-weight: 600; }
-.slash { color: #e74a3b; font-weight: bold; font-size: 20px; margin: 0 8px; }
-.sentence-container { background-color: #f8f9fc; padding: 15px; border-radius: 8px; border-left: 5px solid #4e73df; margin-bottom: 8px; line-height: 2.3; }
-.question-box { background-color: #ffffff; border: 1px solid #e3e6f0; border-left: 4px solid #1cc88a; padding: 15px; border-radius: 6px; margin-bottom: 12px; line-height: 1.8; }
-.summary-box { background-color: #fff3cd; border-left: 5px solid #ffc107; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
-.score-box { background-color: #e8f4f8; border: 2px solid #36b9cc; border-radius: 8px; padding: 15px; margin-bottom: 20px; text-align: center; font-size: 18px; font-weight: bold; color: #2c3e50; }
-.grammar-error { border: 2px solid #e74a3b !important; background-color: #fdf2f2 !important; color: #e74a3b !important; }
-.grammar-error u { text-decoration: underline red 3px; font-weight: bold; }
+:root {
+    --ui-bg: #f6f8fb;
+    --ui-surface: #ffffff;
+    --ui-ink: #1d1d1f;
+    --ui-muted: #788292;
+    --ui-blue: #007aff;
+    --ui-border: #e5eaf1;
+    --ui-radius: 18px;
+}
+
+/* 전체 화면 */
+.stApp {
+    background:
+        radial-gradient(
+            ellipse at 85% 4%,
+            rgba(140, 190, 255, 0.19),
+            transparent 42%
+        ),
+        linear-gradient(180deg, #fafbfd, #f5f7fa);
+}
+
+[data-testid="stHeader"] {
+    background: transparent;
+}
+
+.block-container {
+    max-width: 1140px;
+    padding-top: 2.4rem;
+    padding-bottom: 5rem;
+}
+
+/* Typography */
+html, body, [class*="st-"] {
+    font-family: -apple-system, BlinkMacSystemFont,
+        "SF Pro Display", "Pretendard",
+        "Noto Sans KR", "Segoe UI", sans-serif;
+}
+
+h1, h2, h3 {
+    letter-spacing: -0.035em;
+    color: var(--ui-ink);
+}
+
+h3 {
+    font-weight: 680 !important;
+}
+
+hr {
+    border-color: var(--ui-border) !important;
+    margin: 1.5rem 0 !important;
+}
+
+/* 상단 Hero */
+.app-hero {
+    padding: 12px 0 30px;
+}
+
+.app-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 11px;
+    letter-spacing: 0.13em;
+    font-weight: 750;
+    color: #6b7991;
+    margin-bottom: 13px;
+}
+
+.app-eyebrow::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #007aff;
+    box-shadow: 0 0 0 4px rgba(0,122,255,.10);
+}
+
+.app-hero h1 {
+    font-size: clamp(32px, 4.2vw, 49px);
+    font-weight: 760;
+    letter-spacing: -0.055em;
+    line-height: 1.15;
+    margin: 0 0 13px;
+    color: #1d1d1f;
+}
+
+.app-hero h1 span {
+    color: var(--ui-blue);
+}
+
+.app-hero p {
+    font-size: 15px;
+    line-height: 1.8;
+    color: #778294;
+    margin: 0;
+}
+
+/* 입력 영역: Solid Surface */
+[data-testid="stTextArea"] [data-baseweb="textarea"],
+[data-testid="stTextInput"] [data-baseweb="input"] {
+    border: 1px solid var(--ui-border) !important;
+    border-radius: 16px !important;
+    background: #ffffff !important;
+    box-shadow: 0 4px 16px rgba(30, 49, 80, .035);
+    transition: border-color .2s, box-shadow .2s;
+}
+
+[data-testid="stTextArea"] textarea,
+[data-testid="stTextInput"] input {
+    background: transparent !important;
+    color: var(--ui-ink) !important;
+    font-size: 14px;
+    line-height: 1.75;
+}
+
+[data-testid="stTextArea"] [data-baseweb="textarea"]:focus-within,
+[data-testid="stTextInput"] [data-baseweb="input"]:focus-within {
+    border-color: rgba(0,122,255,.55) !important;
+    box-shadow: 0 0 0 4px rgba(0,122,255,.085);
+}
+
+/* 업로드 */
+[data-testid="stFileUploaderDropzone"] {
+    background: rgba(255,255,255,.82);
+    border: 1px dashed #cbd6e5;
+    border-radius: 16px;
+    padding: 12px;
+}
+
+/* Buttons */
+.stButton > button,
+.stDownloadButton > button {
+    min-height: 46px;
+    border-radius: 14px !important;
+    background: #ffffff;
+    color: #273447;
+    border: 1px solid #e0e7f0;
+    box-shadow: 0 2px 8px rgba(25,45,75,.035);
+    font-size: 14px;
+    font-weight: 650;
+    transition: all .18s ease;
+}
+
+.stButton > button:hover,
+.stDownloadButton > button:hover {
+    transform: translateY(-1px);
+    border-color: #a6cafa;
+    box-shadow: 0 5px 16px rgba(25,45,75,.08);
+}
+
+/* Primary 버튼 */
+.stButton button[data-testid="stBaseButton-primary"] {
+    background: #007aff !important;
+    color: #ffffff !important;
+    border: 1px solid #007aff !important;
+    box-shadow: 0 4px 12px rgba(0,122,255,.16);
+}
+
+.stButton button[data-testid="stBaseButton-primary"]:hover {
+    background: #006de5 !important;
+    color: #ffffff !important;
+}
+
+/* 구문 토큰 */
+.circle-word {
+    display: inline-block;
+    padding: 4px 10px;
+    margin: 3px 2px;
+    font-size: 15px;
+    font-weight: 570;
+    color: #285b9f;
+    background: #f2f7ff;
+    border: 1px solid #dce9fb;
+    border-radius: 11px;
+}
+
+.slash {
+    color: #9eacc0;
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0 6px;
+}
+
+/* 구문 분석 카드: Solid */
+.sentence-container {
+    background: #ffffff;
+    border: 1px solid var(--ui-border);
+    border-radius: 18px;
+    padding: 20px 22px;
+    margin-bottom: 12px;
+    line-height: 2.5;
+    box-shadow: 0 4px 18px rgba(30,49,80,.035);
+}
+
+/* 문제 카드: Solid */
+.question-box {
+    background: #ffffff;
+    border: 1px solid var(--ui-border);
+    border-radius: 18px;
+    padding: 22px 24px;
+    margin: 16px 0;
+    line-height: 1.95;
+    color: #293241;
+    box-shadow: 0 4px 18px rgba(30,49,80,.035);
+}
+
+/* 핵심 요약: Solid */
+.summary-box {
+    background: #f0f6ff;
+    border: 1px solid #deebff;
+    border-left: 3px solid #007aff;
+    border-radius: 16px;
+    padding: 22px 24px;
+    line-height: 1.95;
+    color: #25354d;
+    margin-bottom: 24px;
+}
+
+/* Liquid Glass: 점수 및 진행 현황 */
+.score-box {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    padding: 24px 28px;
+    margin: 20px 0 24px;
+    border-radius: 22px;
+
+    background: linear-gradient(
+        135deg,
+        rgba(255,255,255,.82),
+        rgba(236,245,255,.47)
+    );
+
+    border: 1px solid rgba(255,255,255,.94);
+
+    -webkit-backdrop-filter: blur(20px) saturate(165%);
+    backdrop-filter: blur(20px) saturate(165%);
+
+    box-shadow:
+        0 12px 36px rgba(48,85,140,.09),
+        inset 0 1px 0 rgba(255,255,255,.95);
+
+    color: #253447;
+    text-align: center;
+    font-size: 17px;
+    font-weight: 630;
+    line-height: 1.9;
+}
+
+/* 유리 표면의 미세한 반사광 */
+.score-box::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+        125deg,
+        rgba(255,255,255,.48),
+        transparent 48%
+    );
+    pointer-events: none;
+}
+
+.score-box span[style] {
+    color: #007aff !important;
+    font-weight: 760;
+}
+
+/* 유리 효과 미지원 브라우저 */
+@supports not (backdrop-filter: blur(1px)) {
+    .score-box {
+        background: #f0f6ff;
+    }
+}
+
+/* 문법 오류 */
+.grammar-error {
+    background: #fff0f1 !important;
+    border: 1px solid #ffb6bd !important;
+    color: #d93648 !important;
+}
+
+.grammar-error u {
+    text-decoration-color: #e33e50;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+    font-weight: 700;
+}
+
+/* Expander */
+[data-testid="stExpander"] {
+    background: rgba(255,255,255,.88);
+    border: 1px solid var(--ui-border);
+    border-radius: 16px !important;
+    overflow: hidden;
+}
+
+/* 단어장 테이블 */
+[data-testid="stMarkdownContainer"] table {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid var(--ui-border);
+    border-radius: 16px;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    overflow: hidden;
+}
+
+[data-testid="stMarkdownContainer"] table th {
+    background: #f5f8fd;
+    font-weight: 680;
+    color: #34425a;
+}
+
+[data-testid="stMarkdownContainer"] table th,
+[data-testid="stMarkdownContainer"] table td {
+    padding: 13px 15px !important;
+    border-bottom: 1px solid #edf0f5 !important;
+    font-size: 14px;
+}
+
+[data-testid="stMarkdownContainer"] table tr:last-child td {
+    border-bottom: 0 !important;
+}
+
+/* 모바일 */
+@media (max-width: 640px) {
+    .block-container {
+        padding: 1.3rem 1rem 3rem;
+    }
+
+    .app-hero {
+        padding-bottom: 20px;
+    }
+
+    .score-box {
+        padding: 18px 15px;
+        font-size: 14px;
+        border-radius: 18px;
+    }
+
+    .sentence-container,
+    .question-box,
+    .summary-box {
+        padding: 16px;
+        border-radius: 15px;
+    }
+
+    .circle-word {
+        font-size: 14px;
+    }
+}
 </style>
 """
+
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
@@ -152,8 +497,12 @@ def generate_offline_vocab_and_summary(sentences):
 def generate_summary_and_vocab(sentences):
     full_text = " ".join(sentences)
     prompt = f"""다음 지문을 분석해서 JSON 형식으로 출력해줘.
-    지문: "{full_text}"
-    출력 형식: {{"topic": "핵심주제 1문장", "main_idea": "지문요지 1~2문장", "vocab": [{{"word": "영어단어", "meaning": "한국어 뜻", "context": "문맥상 쓰임"}}]}}"""
+    지문: 
+    ```text
+    {full_text}
+    ```
+    출력 형식: \{"topic": "핵심주제 1문장", "main_idea": "지문요지 1~2문장", "vocab": [\{"word": "영어단어", "meaning": "한국어 뜻", "context": "문맥상 쓰임"\}]\}
+    """
     res = call_ai_with_fallback(prompt, "You are a reading comprehension expert. Return ONLY valid JSON.")
     if res:
         try: return json.loads(re.sub(r'^```json\s*|```$', '', res.strip(), flags=re.MULTILINE))
@@ -252,45 +601,77 @@ def create_export_text(questions):
     for i, q in enumerate(questions, 1): text += f"[Q{i} 정답] {q['answer']}\n[해설] {q.get('explanation', '')}\n\n"
     return text
 
+
 # ---------------------------------------------------------
 # 6. UI 화면 구성
 # ---------------------------------------------------------
-st.title("📚 영어 지문 분석 & 시험 문제 생성기 (Aikar AI 완벽판)")
 
-col_input1, col_input2 = st.columns(2)
-with col_input1:
-    st.markdown("### 1. 영어 지문 입력")
-    uploaded_image = st.file_uploader("📷 지문 이미지 업로드 (온라인 전용)", type=["png", "jpg", "jpeg"])
+st.markdown("""
+<div class="app-hero">
+    <div class="app-eyebrow">AIKAR · ENGLISH STUDIO</div>
+    <h1>영어 지문 분석<span>.</span></h1>
+    <p>
+        구문 학습부터 핵심 어휘, 암기 테스트와
+        수능형 문제 생성까지.<br>
+        하나의 공간에서 더 간결하게 학습하세요.
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
+# 이미지 업로드는 필요할 때만 펼치기
+with st.expander("이미지에서 영어 지문 불러오기", expanded=False):
+    uploaded_image = st.file_uploader(
+        "지문 이미지 업로드 (온라인 전용)",
+        type=["png", "jpg", "jpeg"]
+    )
+
     if uploaded_image:
         with st.spinner("이미지 판독 중..."):
             txt, err = extract_text_from_image_via_ai(uploaded_image)
-            if txt: st.session_state.eng_input_area = txt; st.success("추출 완료!")
-            else: st.error(err)
-    input_eng = st.text_area("영어 내용:", height=150, key="eng_input_area")
+            if txt:
+                st.session_state.eng_input_area = txt
+                st.success("텍스트 추출 완료")
+            else:
+                st.error(err)
+
+# 나란히 정렬된 입력창
+col_input1, col_input2 = st.columns(2, gap="large")
+
+with col_input1:
+    st.markdown("### 01. 영어 지문")
+    input_eng = st.text_area(
+        "영어 원문",
+        height=210,
+        key="eng_input_area",
+        placeholder="분석할 영어 지문을 입력하세요."
+    )
 
 with col_input2:
-    st.markdown("### 2. 한국어 뜻 입력")
-    st.write("\n\n\n\n\n")
-    input_kor = st.text_area("해석 내용 (비워두면 AI 자동 번역 / 오프라인 시 직접 입력):", height=150)
+    st.markdown("### 02. 한국어 해석")
+    input_kor = st.text_area(
+        "한국어 해석 (선택 사항)",
+        height=210,
+        placeholder="비워두면 AI가 자동으로 번역합니다."
+    )
 
 st.divider()
 
 col_b1, col_b2, col_b3, col_b4 = st.columns(4)
 with col_b1:
-    if st.button("📖 구문 학습", use_container_width=True):
+    if st.button("구문 학습", use_container_width=True):
         if input_eng: st.session_state.sentences, st.session_state.translations = process_inputs(input_eng, input_kor); st.session_state.mode = "learn"
 with col_b2:
-    if st.button("📑 단어장 & 요약", use_container_width=True):
+    if st.button("단어장 & 요약", use_container_width=True):
         if input_eng:
             with st.spinner("지문 요약 및 단어장 생성 중..."):
                 s, _ = process_inputs(input_eng, input_kor)
                 st.session_state.summary_data = generate_summary_and_vocab(s)
                 st.session_state.mode = "summary"
 with col_b3:
-    if st.button("🧠 암기 테스트", use_container_width=True):
+    if st.button("암기 테스트", use_container_width=True):
         if input_eng: st.session_state.sentences, st.session_state.translations = process_inputs(input_eng, input_kor); st.session_state.mode = "memo"
 with col_b4:
-    if st.button("📝 5개 유형 문제 생성", use_container_width=True):
+    if st.button("5개 유형 문제 생성", type="primary", use_container_width=True):
         if input_eng:
             with st.spinner("수능 5대 유형 문제 생성 중..."):
                 s, t = process_inputs(input_eng, input_kor)
